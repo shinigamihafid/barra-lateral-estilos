@@ -1,0 +1,187 @@
+<script>
+
+let estiloActual=0;
+
+function agregarEstilo(numActual){
+
+  if(numActual==null){
+    estiloActual++;
+    numActual=estiloActual;
+  }
+
+  let div=document.createElement('div');
+  div.id='estilo'+numActual;
+
+  div.appendChild(crearBotonGuardar(numActual));
+  div.appendChild(crearBotonAplicar(numActual));
+  div.appendChild(crearBotonBorrar(numActual));
+
+document.getElementById('cajaEstilos').appendChild(div);
+
+}
+
+function crearBotonAplicar(numActual){
+  let boton = document.createElement('button');
+  boton.classList.add('btn','boton'+numActual,'btn-primary','m-2');
+  boton.style.borderWidth='0px';
+  boton.textContent='Aplicar estilo ';
+  boton.onclick=()=> aplicarEstiloActual(numActual);
+
+  return boton;
+}
+
+function crearBotonGuardar(numActual){
+  let botonPlus = document.createElement('button');
+  botonPlus.classList.add('btn','boton'+numActual,'btn-primary');
+  botonPlus.style.borderWidth='0px';
+  botonPlus.onclick=()=> guardarEstiloActual(numActual);
+
+  let iconoPlus=document.createElement('i');
+  iconoPlus.classList.add('bi','bi-plus-circle');
+
+  botonPlus.appendChild(iconoPlus);
+
+  return botonPlus;
+}
+
+function crearBotonBorrar(numActual){
+  let botonBorrar = document.createElement('button');
+  botonBorrar.classList.add('btn','boton'+numActual,'btn-primary');
+  botonBorrar.style.borderWidth='0px';
+  botonBorrar.onclick=()=>borrarEstiloActual(numActual);
+
+  let iconoBorrar=document.createElement('i');
+  iconoBorrar.classList.add('bi','bi-trash');
+
+  botonBorrar.appendChild(iconoBorrar);
+
+  return botonBorrar;
+}
+
+function aplicarEstiloActual(numActual){
+  google.script.run.aplicarEstilo(numActual);
+}
+
+function borrarEstiloActual(numActual){ 
+  document.getElementById('estilo'+numActual).remove();
+  google.script.run.eliminarEstilo(numActual);
+};
+
+function guardarEstiloActual(numActual){
+google.script.run.withSuccessHandler(
+  function(obj){
+  
+    let botones = document.getElementsByClassName('boton'+numActual);
+
+    Array.from(botones).forEach(boton=>{
+      boton.style.color=obj.colorLetra;
+      boton.style.backgroundColor=obj.colorFondo;
+      
+      boton.style.borderTopColor=obj.BordeSupCO;
+      boton.style.borderTopStyle=ObtenerEstiloBorde(obj.BordeSupST);
+      boton.style.borderTopWidth=ObtenerGrosorBorde(obj.BordeSupST);
+
+      boton.style.borderBottomColor=obj.BordeInfCO;
+      boton.style.borderBottomStyle=ObtenerEstiloBorde(obj.BordeInfST);
+      boton.style.borderBottomWidth=ObtenerGrosorBorde(obj.BordeInfST);
+
+      boton.style.borderLeftColor=obj.BordeIzqCO;
+      boton.style.borderLeftStyle=ObtenerEstiloBorde(obj.BordeIzqST);
+      boton.style.borderLeftWidth=ObtenerGrosorBorde(obj.BordeIzqST);
+
+      boton.style.borderRigthColor=obj.BordeDerCO;
+      boton.style.borderRigthStyle=ObtenerEstiloBorde(obj.BordeDerST);
+      boton.style.borderRigthWidth=ObtenerGrosorBorde(obj.BordeDerST);
+
+    });
+
+  }).guardarEstilo(numActual);
+};
+function guardarEstilo(numEstilo){
+
+google.script.run.withSuccessHandler(
+    function(obj){
+      
+      let botones = document.getElementsByClassName('boton'+numEstilo);
+
+      Array.from(botones).forEach(boton=>{
+        boton.style.color=obj.colorLetra;
+        boton.style.backgroundColor=obj.colorFondo;
+      });
+
+    }).guardarEstilo(numEstilo);
+
+}
+
+window.onload=function(){
+  google.script.run.withSuccessHandler(
+    function(obj){
+      Object.keys(obj).sort().forEach(propiedad=>{
+
+        let num=propiedad.slice(10);
+        if(!document.getElementById('estilo'+num)) agregarEstilo(num);
+        
+        if(num>estiloActual) estiloActual=num;
+
+        aplicarEstilos(propiedad,obj);
+
+      })
+    }).cargarEstilos();
+}
+
+function aplicarEstilos(propiedad,obj){
+
+  let botones = document.getElementsByClassName('boton'+propiedad.slice(10));
+    switch(propiedad.slice(0,10)){
+      case 'colorFondo': Array.from(botones).forEach(boton=>boton.style.backgroundColor=obj[propiedad]); break;
+      case 'colorLetra': Array.from(botones).forEach(boton=>boton.style.color=obj[propiedad]); break;
+      case 'BordeSupCO': Array.from(botones).forEach(boton=>boton.style.borderTopColor=obj[propiedad]); break;
+      case 'BordeInfCO': Array.from(botones).forEach(boton=>boton.style.borderBottomColor=obj[propiedad]); break;
+      case 'BordeIzqCO': Array.from(botones).forEach(boton=>boton.style.borderLeftColor=obj[propiedad]); break;
+      case 'BordeDerCO': Array.from(botones).forEach(boton=>boton.style.borderRigthColor=obj[propiedad]); break;
+      case 'BordeSupST': Array.from(botones).forEach(boton=>{
+            boton.style.borderTopStyle=ObtenerEstiloBorde(obj[propiedad]);
+            boton.style.borderTopWidth=ObtenerGrosorBorde(obj[propiedad]);
+          }); break;
+      case 'BordeInfST': Array.from(botones).forEach(boton=>{
+            boton.style.borderBottomStyle=ObtenerEstiloBorde(obj[propiedad]);
+            boton.style.borderBottomWidth=ObtenerGrosorBorde(obj[propiedad]);
+          }); break;
+      case 'BordeIzqST': Array.from(botones).forEach(boton=>{
+            boton.style.borderLeftStyle=ObtenerEstiloBorde(obj[propiedad]);
+            boton.style.borderLeftWidth=ObtenerGrosorBorde(obj[propiedad]);
+          }); break;
+      case 'BordeDerST': Array.from(botones).forEach(boton=>{
+            boton.style.borderRigthStyle=ObtenerEstiloBorde(obj[propiedad]);
+            boton.style.borderRigthWidth=ObtenerGrosorBorde(obj[propiedad]);
+          }); break;
+    }
+
+}
+
+function ObtenerGrosorBorde(borde){
+  switch(borde){
+  case 'DOTTED': return 'medium';
+  case 'DASHED': return 'medium';
+  case 'SOLID': return 'thin';
+  case 'SOLID_MEDIUM': return 'medium';
+  case 'SOLID_THICK': return 'thick';
+  case 'DOUBLE': return 'medium';
+  default: return null
+  }
+}
+
+function ObtenerEstiloBorde(borde){
+  switch(borde){
+  case 'DOTTED': return 'dotted';
+  case 'DASHED': return 'dashed';
+  case 'SOLID': return 'solid';
+  case 'SOLID_MEDIUM': return 'solid';
+  case 'SOLID_THICK': return 'solid';
+  case 'DOUBLE': return 'double';
+  default: return null
+  }
+}
+
+    </script>
+
